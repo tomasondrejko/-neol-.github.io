@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEON — Web Design Studio</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--cyan:#00e5ff;--cyan2:#00b4d8;--cyan3:#0077b6;--bg:#050a0f;--bg2:#080e14;--bg3:#0d1520;--text:#e0f7fa;--muted:#4a7a8a;--border:rgba(0,229,255,0.12);--glow:rgba(0,229,255,0.18)}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;overflow-x:hidden}
+#canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* NAV */
+nav{position:fixed;top:0;width:100%;z-index:100;padding:1.2rem 4rem;display:flex;justify-content:space-between;align-items:center;background:rgba(5,10,15,0.7);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;filter:drop-shadow(0 0 10px rgba(0,229,255,0.45))}
+.nav-right{display:flex;align-items:center;gap:2rem}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:0.85rem;letter-spacing:0.08em;text-transform:uppercase;transition:color 0.3s}
+.nav-links a:hover{color:var(--cyan)}
+.lang-switch{display:flex;align-items:center;gap:2px;background:rgba(0,229,255,0.06);border:1px solid var(--border);border-radius:2px;overflow:hidden}
+.lang-btn{background:transparent;border:none;color:var(--muted);padding:0.35rem 0.65rem;font-size:0.75rem;letter-spacing:0.1em;cursor:pointer;transition:all 0.25s;font-family:inherit}
+.lang-btn.active{background:var(--cyan);color:#000;font-weight:700}
+.lang-btn:not(.active):hover{color:var(--cyan)}
+.nav-cta{background:transparent;border:1px solid var(--cyan);color:var(--cyan);padding:0.5rem 1.4rem;border-radius:2px;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all 0.3s}
+.nav-cta:hover{background:var(--cyan);color:#000;box-shadow:0 0 24px rgba(0,229,255,0.4)}
+
+/* HERO */
+#hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 2rem}
+.hero-tag{font-size:0.75rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--cyan);margin-bottom:1.5rem;opacity:0;animation:fadeUp 0.8s 0.3s forwards}
+.hero-title{font-size:clamp(3.5rem,9vw,8rem);font-weight:900;line-height:0.9;letter-spacing:-0.03em;opacity:0;animation:fadeUp 0.8s 0.5s forwards}
+.hero-title .line{display:block}
+.hero-title .glow{color:var(--cyan);text-shadow:0 0 40px rgba(0,229,255,0.5),0 0 80px rgba(0,229,255,0.2)}
+.hero-sub{margin-top:2rem;font-size:1.1rem;color:var(--muted);max-width:500px;line-height:1.6;opacity:0;animation:fadeUp 0.8s 0.7s forwards}
+.hero-actions{margin-top:3rem;display:flex;gap:1rem;opacity:0;animation:fadeUp 0.8s 0.9s forwards}
+.btn-primary{background:var(--cyan);color:#000;padding:0.9rem 2.5rem;border:none;border-radius:2px;font-weight:700;font-size:0.9rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;box-shadow:0 0 30px rgba(0,229,255,0.3)}
+.btn-primary:hover{box-shadow:0 0 50px rgba(0,229,255,0.6);transform:translateY(-2px)}
+.btn-ghost{background:transparent;color:var(--text);padding:0.9rem 2.5rem;border:1px solid rgba(255,255,255,0.15);border-radius:2px;font-size:0.9rem;letter-spacing:0.05em;cursor:pointer;transition:all 0.3s}
+.btn-ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+.scroll-hint{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:0.5rem;opacity:0;animation:fadeUp 0.8s 1.2s forwards}
+.scroll-hint span{font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted)}
+.scroll-line{width:1px;height:48px;background:linear-gradient(to bottom,var(--cyan),transparent);animation:scrollPulse 2s infinite}
+
+/* SECTION BASE */
+section{position:relative;z-index:1;padding:8rem 4rem}
+.section-tag{font-size:0.7rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--cyan);margin-bottom:1rem}
+.section-title{font-size:clamp(2rem,4vw,3.2rem);font-weight:800;line-height:1.1;margin-bottom:1.5rem}
+.divider{width:100%;height:1px;background:linear-gradient(to right,transparent,var(--cyan),transparent);opacity:0.2;margin:0}
+
+/* SERVICES */
+#services{background:var(--bg)}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5px;margin-top:4rem;background:var(--border)}
+.service-card{background:var(--bg2);padding:2.5rem;transition:all 0.4s;position:relative;overflow:hidden;cursor:default}
+.service-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(to right,transparent,var(--cyan),transparent);opacity:0;transition:opacity 0.4s}
+.service-card:hover::before{opacity:1}
+.service-card:hover{background:var(--bg3)}
+.service-num{font-size:0.7rem;color:var(--cyan);letter-spacing:0.2em;margin-bottom:0.8rem}
+.service-card h3{font-size:1.15rem;font-weight:700;margin-bottom:0.8rem;letter-spacing:-0.01em}
+.service-card p{font-size:0.875rem;color:var(--muted);line-height:1.7}
+
+/* STATS */
+.stats-bar{position:relative;z-index:1;background:var(--bg3);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:2.5rem 4rem;display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.stat{text-align:center}
+.stat-num{font-size:2.2rem;font-weight:900;color:var(--cyan);display:block;line-height:1}
+.stat-label{font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-top:0.5rem;display:block}
+
+/* TESTIMONIALS */
+#testimonials{background:var(--bg2)}
+.testi-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4rem}
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
+.testi-card{background:var(--bg3);border:1px solid var(--border);padding:2.5rem;border-radius:1px;position:relative;transition:border-color 0.3s}
+.testi-card:hover{border-color:rgba(0,229,255,0.3)}
+.quote-mark{font-size:4rem;line-height:0.5;color:var(--cyan);opacity:0.3;margin-bottom:1.5rem;font-family:Georgia,serif}
+.testi-text{font-size:0.95rem;color:#a0c4cc;line-height:1.8;margin-bottom:2rem;font-style:italic}
+.testi-author{display:flex;align-items:center;gap:0.8rem}
+.author-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--cyan3),var(--cyan));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;color:#000}
+.author-name{font-size:0.875rem;font-weight:600}
+.author-role{font-size:0.75rem;color:var(--muted)}
+
+/* CONTACT */
+#contact{background:var(--bg)}
+.contact-wrap{display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:start;max-width:1100px;margin:0 auto}
+.contact-info h2{font-size:clamp(2rem,4vw,3rem);font-weight:800;margin-bottom:1.5rem;line-height:1.1}
+.contact-info h2 span{color:var(--cyan)}
+.contact-info p{color:var(--muted);line-height:1.8;margin-bottom:2rem}
+.contact-detail{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
+.detail-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);flex-shrink:0}
+.contact-form{display:flex;flex-direction:column;gap:1rem}
+.form-group{display:flex;flex-direction:column;gap:0.4rem}
+.form-group label{font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)}
+.form-group input,.form-group textarea,.form-group select{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:0.85rem 1rem;font-size:0.9rem;outline:none;transition:border-color 0.3s;border-radius:1px;font-family:inherit}
+.form-group input:focus,.form-group textarea:focus{border-color:var(--cyan);box-shadow:0 0 16px rgba(0,229,255,0.08)}
+.form-group textarea{resize:vertical;min-height:120px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.submit-btn{background:var(--cyan);color:#000;border:none;padding:1rem;font-weight:700;font-size:0.85rem;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;margin-top:0.5rem}
+.submit-btn:hover{box-shadow:0 0 40px rgba(0,229,255,0.4);transform:translateY(-1px)}
+
+/* FOOTER */
+footer{position:relative;z-index:1;padding:2.5rem 4rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--bg)}
+.footer-logo{font-size:1.1rem;font-weight:800;letter-spacing:0.15em;color:var(--cyan)}
+.footer-text{font-size:0.8rem;color:var(--muted)}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scrollPulse{0%,100%{opacity:0.3}50%{opacity:1}}
+.reveal{opacity:0;transform:translateY(32px);transition:opacity 0.7s,transform 0.7s}
+.reveal.visible{opacity:1;transform:none}
+
+@media(max-width:768px){
+  nav{padding:1rem 1.2rem}
+  .nav-links{display:none}
+  section{padding:5rem 1.5rem}
+  .stats-bar{padding:2rem 1.5rem;grid-template-columns:repeat(2,1fr)}
+  .contact-wrap{grid-template-columns:1fr;gap:3rem}
+  .form-row{grid-template-columns:1fr}
+  footer{padding:2rem 1.5rem;flex-direction:column;gap:1rem;text-align:center}
+}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<nav>
+  <div class="logo">
+  <svg width="110" height="38" viewBox="0 0 110 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- N -->
+    <line x1="2" y1="2" x2="2" y2="26" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="square"/>
+    <line x1="2" y1="2" x2="18" y2="26" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="square"/>
+    <line x1="18" y1="2" x2="18" y2="26" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="square"/>
+    <!-- E with horizontal bars -->
+    <line x1="25" y1="2" x2="25" y2="26" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="square"/>
+    <line x1="25" y1="2" x2="41" y2="2" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="square"/>
+    <line x1="25" y1="14" x2="39" y2="14" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="square"/>
+    <line x1="25" y1="26" x2="41" y2="26" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="square"/>
+    <!-- O circle -->
+    <circle cx="54" cy="14" r="12" stroke="#00e5ff" stroke-width="2.2" fill="none"/>
+    <!-- L -->
+    <line x1="72" y1="2" x2="72" y2="26" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="square"/>
+    <line x1="72" y1="26" x2="88" y2="26" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="square"/>
+    <!-- STUDIO subtitle -->
+    <text x="55" y="36" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="7.5" letter-spacing="4" fill="#00e5ff" opacity="0.7" font-weight="400">STUDIO</text>
+  </svg>
+</div>
+  <div class="nav-right">
+    <ul class="nav-links">
+      <li><a href="#services" data-key="nav_services">Služby</a></li>
+      <li><a href="#testimonials" data-key="nav_work">Referencie</a></li>
+      <li><a href="#contact" data-key="nav_contact">Kontakt</a></li>
+    </ul>
+    <div class="lang-switch">
+      <button class="lang-btn active" onclick="setLang('sk')">SK</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+    </div>
+    <button class="nav-cta" data-key="nav_cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Cenová ponuka</button>
+  </div>
+</nav>
+
+<section id="hero">
+  <p class="hero-tag" data-key="hero_tag">✦ Štúdio webového dizajnu</p>
+  <h1 class="hero-title">
+    <span class="line" data-key="hero_line1">Tvoríme</span>
+    <span class="line glow" data-key="hero_line2">digitálne</span>
+    <span class="line" data-key="hero_line3">zážitky.</span>
+  </h1>
+  <p class="hero-sub" data-key="hero_sub">Značky, ktoré nemožno prehliadnuť. Weby, ktoré predávajú. Dizajn, ktorý vyzerá ako budúcnosť.</p>
+  <div class="hero-actions">
+    <button class="btn-primary" data-key="hero_cta1" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Spustiť projekt</button>
+    <button class="btn-ghost" data-key="hero_cta2" onclick="document.getElementById('services').scrollIntoView({behavior:'smooth'})">Pozrieť práce</button>
+  </div>
+  <div class="scroll-hint"><span data-key="scroll">Scrollovať</span><div class="scroll-line"></div></div>
+</section>
+
+<div class="stats-bar reveal">
+  <div class="stat"><span class="stat-num">120+</span><span class="stat-label" data-key="stat1">Dokončených projektov</span></div>
+  <div class="stat"><span class="stat-num">98%</span><span class="stat-label" data-key="stat2">Spokojnosť klientov</span></div>
+  <div class="stat"><span class="stat-num">5×</span><span class="stat-label" data-key="stat3">Priemerný nárast konverzií</span></div>
+  <div class="stat"><span class="stat-num">14</span><span class="stat-label" data-key="stat4">Dní priemerná dodávka</span></div>
+</div>
+
+<div class="divider"></div>
+
+<section id="services">
+  <p class="section-tag reveal" data-key="srv_tag">✦ Čo robíme</p>
+  <h2 class="section-title reveal" data-key="srv_title">Tvorba. Kód. Konverzia.</h2>
+  <div class="services-grid reveal">
+    <div class="service-card"><span class="service-num">01</span><h3 data-key="s1h">Vizuálna identita</h3><p data-key="s1p">Logá, farebné systémy a vizuálny jazyk, ktorý robí vašu značku okamžite rozpoznateľnou a nezabudnuteľnou.</p></div>
+    <div class="service-card"><span class="service-num">02</span><h3 data-key="s2h">Webový dizajn</h3><p data-key="s2p">Pixel-perfektné rozhrania navrhnuté pre dojem — od landing pages až po komplexné SaaS dashboardy.</p></div>
+    <div class="service-card"><span class="service-num">03</span><h3 data-key="s3h">Vývoj</h3><p data-key="s3p">Rýchle, prístupné, SEO-ready weby v React, Next.js alebo Webflow. Výkon je pre nás samozrejmosť.</p></div>
+    <div class="service-card"><span class="service-num">04</span><h3 data-key="s4h">Animácie & interakcia</h3><p data-key="s4p">Micro-animácie a scroll efekty, ktoré pôsobia živo. Detaily, ktoré odlišujú dobré od nezabudnuteľného.</p></div>
+    <div class="service-card"><span class="service-num">05</span><h3 data-key="s5h">UX stratégia</h3><p data-key="s5p">Používateľské cesty podložené výskumom. Odstraňujeme trenie, eliminujeme váhanie a navrhujeme pre konverziu.</p></div>
+    <div class="service-card"><span class="service-num">06</span><h3 data-key="s6h">Správa & rast</h3><p data-key="s6p">Priebežná podpora, A/B testovanie a iteratívne vylepšenia. Rastieme spolu s vaším podnikaním.</p></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="testimonials">
+  <div class="testi-header reveal">
+    <div>
+      <p class="section-tag" data-key="tst_tag">✦ Referencie</p>
+      <h2 class="section-title" style="margin-bottom:0" data-key="tst_title">Čo hovoria klienti</h2>
+    </div>
+  </div>
+  <div class="testi-grid reveal">
+    <div class="testi-card">
+      <div class="quote-mark">"</div>
+      <p class="testi-text" data-key="t1">NEON kompletne pretransformoval našu online prezentáciu. Do troch týždňov od spustenia sa nám strojnásobilo generovanie leadov. Pozornosť venovaná detailom bola na inej úrovni.</p>
+      <div class="testi-author"><div class="author-avatar">MK</div><div><div class="author-name">Martin Kovač</div><div class="author-role">CEO, Vertex SaaS</div></div></div>
+    </div>
+    <div class="testi-card">
+      <div class="quote-mark">"</div>
+      <p class="testi-text" data-key="t2">Dali sme im vágny brief a vrátili sa s niečím, čo sme ani nevedeli, že potrebujeme. Animácie pôsobia prémiovo, mobilná verzia je bezchybná. Čistý talent.</p>
+      <div class="testi-author"><div class="author-avatar">SF</div><div><div class="author-name">Sofia Ferreira</div><div class="author-role">Head of Marketing, Lumen Capital</div></div></div>
+    </div>
+    <div class="testi-card">
+      <div class="quote-mark">"</div>
+      <p class="testi-text" data-key="t3">Rýchli, komunikatívni a výsledok predbehol každé očakávanie. Miera odchodov klesla o 40 % a web teraz skutočne predáva. NEON je to pravé.</p>
+      <div class="testi-author"><div class="author-avatar">AJ</div><div><div class="author-name">Adam Jirák</div><div class="author-role">Founder, Orbit Studio</div></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="contact">
+  <div class="contact-wrap">
+    <div class="contact-info reveal">
+      <p class="section-tag" data-key="con_tag">✦ Kontakt</p>
+      <h2 data-key="con_h2">Poďme vytvoriť niečo <span>elektrické.</span></h2>
+      <p data-key="con_p">Máte projekt na mysli? Povedzte nám o ňom. Odpovedáme do 24 hodín a každému vážnemu záujemcovi ponúkame bezplatný 30-minútový discovery call.</p>
+      <div class="contact-detail"><div class="detail-dot"></div><span style="font-size:0.875rem;color:#a0c4cc">hello@neon.studio</span></div>
+      <div class="contact-detail"><div class="detail-dot"></div><span style="font-size:0.875rem;color:#a0c4cc" data-key="con_d2">Dostupní po celom svete · Remote-first</span></div>
+      <div class="contact-detail"><div class="detail-dot"></div><span style="font-size:0.875rem;color:#a0c4cc" data-key="con_d3">Odpoveď do 24 hodín</span></div>
+    </div>
+    <div class="contact-form reveal">
+      <div class="form-row">
+        <div class="form-group"><label data-key="f_fname">Meno</label><input type="text" data-placeholder-key="fp_fname" placeholder="Ján"></div>
+        <div class="form-group"><label data-key="f_lname">Priezvisko</label><input type="text" data-placeholder-key="fp_lname" placeholder="Novák"></div>
+      </div>
+      <div class="form-group"><label data-key="f_email">E-mail</label><input type="email" data-placeholder-key="fp_email" placeholder="jan@firma.sk"></div>
+      <div class="form-group"><label data-key="f_type">Typ projektu</label>
+        <select>
+          <option value="" data-key="fo_default">Vyberte službu...</option>
+          <option data-key="fo_1">Vizuálna identita</option>
+          <option data-key="fo_2">Webový dizajn</option>
+          <option data-key="fo_3">Vývoj</option>
+          <option data-key="fo_4">Kompletný balík</option>
+          <option data-key="fo_5">Iné</option>
+        </select>
+      </div>
+      <div class="form-group"><label data-key="f_msg">Váš projekt</label><textarea data-placeholder-key="fp_msg" placeholder="Stručne opíšte projekt — termín, ciele, inšpirácia..."></textarea></div>
+      <button class="submit-btn" data-key="f_submit" data-sent-key="f_sent" onclick="handleSubmit(this)">Odoslať správu →</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">
+  <svg width="72" height="26" viewBox="0 0 90 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="2" y1="1" x2="2" y2="22" stroke="#00e5ff" stroke-width="2" stroke-linecap="square"/>
+    <line x1="2" y1="1" x2="16" y2="22" stroke="#00e5ff" stroke-width="2" stroke-linecap="square"/>
+    <line x1="16" y1="1" x2="16" y2="22" stroke="#00e5ff" stroke-width="2" stroke-linecap="square"/>
+    <line x1="22" y1="1" x2="22" y2="22" stroke="#00e5ff" stroke-width="2" stroke-linecap="square"/>
+    <line x1="22" y1="1" x2="36" y2="1" stroke="#00e5ff" stroke-width="2" stroke-linecap="square"/>
+    <line x1="22" y1="11.5" x2="34" y2="11.5" stroke="#00e5ff" stroke-width="2" stroke-linecap="square"/>
+    <line x1="22" y1="22" x2="36" y2="22" stroke="#00e5ff" stroke-width="2" stroke-linecap="square"/>
+    <circle cx="47" cy="11.5" r="10.5" stroke="#00e5ff" stroke-width="2" fill="none"/>
+    <line x1="62" y1="1" x2="62" y2="22" stroke="#00e5ff" stroke-width="2" stroke-linecap="square"/>
+    <line x1="62" y1="22" x2="76" y2="22" stroke="#00e5ff" stroke-width="2" stroke-linecap="square"/>
+    <text x="39" y="29.5" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="6" letter-spacing="3.5" fill="#00e5ff" opacity="0.6">STUDIO</text>
+  </svg>
+</div>
+  <div class="footer-text" data-key="footer_copy">© 2026 NEON Studio. Všetky práva vyhradené.</div>
+  <div class="footer-text" style="color:var(--cyan);font-size:0.75rem;letter-spacing:0.1em">DIZAJN · KÓD · DOPAD</div>
+</footer>
+
+<script>
+const TRANSLATIONS = {
+  sk:{
+    nav_services:"Služby",nav_work:"Referencie",nav_contact:"Kontakt",nav_cta:"Cenová ponuka",
+    hero_tag:"✦ Štúdio webového dizajnu",hero_line1:"Tvoríme",hero_line2:"digitálne",hero_line3:"zážitky.",
+    hero_sub:"Značky, ktoré nemožno prehliadnuť. Weby, ktoré predávajú. Dizajn, ktorý vyzerá ako budúcnosť.",
+    hero_cta1:"Spustiť projekt",hero_cta2:"Pozrieť práce",scroll:"Scrollovať",
+    stat1:"Dokončených projektov",stat2:"Spokojnosť klientov",stat3:"Priemerný nárast konverzií",stat4:"Dní priemerná dodávka",
+    srv_tag:"✦ Čo robíme",srv_title:"Tvorba. Kód. Konverzia.",
+    s1h:"Vizuálna identita",s1p:"Logá, farebné systémy a vizuálny jazyk, ktorý robí vašu značku okamžite rozpoznateľnou a nezabudnuteľnou.",
+    s2h:"Webový dizajn",s2p:"Pixel-perfektné rozhrania navrhnuté pre dojem — od landing pages až po komplexné SaaS dashboardy.",
+    s3h:"Vývoj",s3p:"Rýchle, prístupné, SEO-ready weby v React, Next.js alebo Webflow. Výkon je pre nás samozrejmosť.",
+    s4h:"Animácie & interakcia",s4p:"Micro-animácie a scroll efekty, ktoré pôsobia živo. Detaily, ktoré odlišujú dobré od nezabudnuteľného.",
+    s5h:"UX stratégia",s5p:"Používateľské cesty podložené výskumom. Odstraňujeme trenie, eliminujeme váhanie a navrhujeme pre konverziu.",
+    s6h:"Správa & rast",s6p:"Priebežná podpora, A/B testovanie a iteratívne vylepšenia. Rastieme spolu s vaším podnikaním.",
+    tst_tag:"✦ Referencie",tst_title:"Čo hovoria klienti",
+    t1:"NEON kompletne pretransformoval našu online prezentáciu. Do troch týždňov od spustenia sa nám strojnásobilo generovanie leadov. Pozornosť venovaná detailom bola na inej úrovni.",
+    t2:"Dali sme im vágny brief a vrátili sa s niečím, čo sme ani nevedeli, že potrebujeme. Animácie pôsobia prémiovo, mobilná verzia je bezchybná. Čistý talent.",
+    t3:"Rýchli, komunikatívni a výsledok predbehol každé očakávanie. Miera odchodov klesla o 40 % a web teraz skutočne predáva. NEON je to pravé.",
+    con_tag:"✦ Kontakt",con_h2:'Poďme vytvoriť niečo <span>elektrické.</span>',
+    con_p:"Máte projekt na mysli? Povedzte nám o ňom. Odpovedáme do 24 hodín a každému vážnemu záujemcovi ponúkame bezplatný 30-minútový discovery call.",
+    con_d2:"Dostupní po celom svete · Remote-first",con_d3:"Odpoveď do 24 hodín",
+    f_fname:"Meno",f_lname:"Priezvisko",f_email:"E-mail",f_type:"Typ projektu",f_msg:"Váš projekt",
+    fp_fname:"Ján",fp_lname:"Novák",fp_email:"jan@firma.sk",fp_msg:"Stručne opíšte projekt — termín, ciele, inšpirácia...",
+    fo_default:"Vyberte službu...",fo_1:"Vizuálna identita",fo_2:"Webový dizajn",fo_3:"Vývoj",fo_4:"Kompletný balík",fo_5:"Iné",
+    f_submit:"Odoslať správu →",f_sent:"Správa odoslaná ✓",
+    footer_copy:"© 2026 NEON Studio. Všetky práva vyhradené.",footer_tag:"DIZAJN · KÓD · DOPAD"
+  },
+  en:{
+    nav_services:"Services",nav_work:"Work",nav_contact:"Contact",nav_cta:"Get a quote",
+    hero_tag:"✦ Web design studio",hero_line1:"We build",hero_line2:"digital",hero_line3:"experiences.",
+    hero_sub:"Brands that demand attention. Websites that convert. Design that feels like the future.",
+    hero_cta1:"Start a project",hero_cta2:"See our work",scroll:"Scroll",
+    stat1:"Projects delivered",stat2:"Client satisfaction",stat3:"Avg. conversion lift",stat4:"Day avg. delivery",
+    srv_tag:"✦ What we do",srv_title:"Craft. Code. Convert.",
+    s1h:"Brand Identity",s1p:"Logos, color systems, and visual language that make your brand instantly recognizable and impossible to ignore.",
+    s2h:"Web Design",s2p:"Pixel-perfect interfaces designed for impact — from landing pages to complex SaaS dashboards.",
+    s3h:"Development",s3p:"Blazing-fast, accessible, SEO-ready builds in React, Next.js, or Webflow. Performance is non-negotiable.",
+    s4h:"Motion & Interaction",s4p:"Micro-animations and scroll experiences that feel alive. The details that separate good from unforgettable.",
+    s5h:"UX Strategy",s5p:"Research-backed user journeys. We map friction, eliminate hesitation, and design for conversion.",
+    s6h:"Maintenance & Growth",s6p:"Ongoing support, A/B testing, and iterative improvements. We grow with your business.",
+    tst_tag:"✦ Testimonials",tst_title:"What clients say",
+    t1:"NEON completely transformed our online presence. Within 3 weeks of launch, our lead generation tripled. The attention to detail was unlike anything we'd experienced before.",
+    t2:"We gave them a vague brief and they came back with something we didn't know we needed. The animations feel premium, the mobile experience is flawless. Pure talent.",
+    t3:"Fast, communicative, and the end result exceeded every expectation. Our bounce rate dropped 40% and the site actually sells for us now. NEON is the real deal.",
+    con_tag:"✦ Contact",con_h2:'Let\'s build something <span>electric.</span>',
+    con_p:"Have a project in mind? Tell us about it. We respond within 24 hours and offer a free 30-minute discovery call for every serious enquiry.",
+    con_d2:"Available worldwide · Remote-first",con_d3:"Response within 24 hours",
+    f_fname:"First name",f_lname:"Last name",f_email:"Email",f_type:"Project type",f_msg:"Tell us about your project",
+    fp_fname:"John",fp_lname:"Smith",fp_email:"john@company.com",fp_msg:"Give us a brief overview — timeline, goals, inspiration...",
+    fo_default:"Select a service...",fo_1:"Brand Identity",fo_2:"Web Design",fo_3:"Development",fo_4:"Full package",fo_5:"Other",
+    f_submit:"Send message →",f_sent:"Message sent ✓",
+    footer_copy:"© 2026 NEON Studio. All rights reserved.",footer_tag:"DESIGN · CODE · IMPACT"
+  }
+};
+
+let currentLang = 'sk';
+
+function setLang(lang){
+  currentLang = lang;
+  const t = TRANSLATIONS[lang];
+  document.querySelectorAll('[data-key]').forEach(el=>{
+    const k = el.getAttribute('data-key');
+    if(t[k] !== undefined) el.innerHTML = t[k];
+  });
+  document.querySelectorAll('[data-placeholder-key]').forEach(el=>{
+    const k = el.getAttribute('data-placeholder-key');
+    if(t[k] !== undefined) el.placeholder = t[k];
+  });
+  // footer tag
+  const ftag = document.querySelector('.footer-text[style*="cyan"]');
+  if(ftag) ftag.textContent = t.footer_tag;
+  // lang buttons
+  document.querySelectorAll('.lang-btn').forEach(b=>{
+    b.classList.toggle('active', b.textContent.trim().toLowerCase()===lang);
+  });
+  document.documentElement.lang = lang;
+}
+
+function handleSubmit(btn){
+  const t = TRANSLATIONS[currentLang];
+  btn.textContent = t.f_sent;
+  btn.style.background = '#00b4d8';
+}
+
+// ── CANVAS ──
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let W,H,dots,mouse={x:-9999,y:-9999};
+
+function resize(){
+  W=canvas.width=window.innerWidth;
+  H=canvas.height=window.innerHeight;
+  buildDots();
+}
+function buildDots(){
+  const cols=Math.ceil(W/60),rows=Math.ceil(H/60);
+  dots=[];
+  for(let r=0;r<=rows;r++) for(let c=0;c<=cols;c++)
+    dots.push({x:c*(W/cols),y:r*(H/rows),ox:c*(W/cols),oy:r*(H/rows),vx:0,vy:0,size:Math.random()*1.2+0.4});
+}
+function drawGrid(){
+  const cols=Math.ceil(W/60),rows=Math.ceil(H/60),tc=cols+1;
+  ctx.strokeStyle='rgba(0,229,255,0.06)';ctx.lineWidth=0.5;
+  for(let r=0;r<=rows;r++){ctx.beginPath();for(let c=0;c<=cols;c++){const d=dots[r*tc+c];c===0?ctx.moveTo(d.x,d.y):ctx.lineTo(d.x,d.y)}ctx.stroke()}
+  for(let c=0;c<=cols;c++){ctx.beginPath();for(let r=0;r<=rows;r++){const d=dots[r*tc+c];r===0?ctx.moveTo(d.x,d.y):ctx.lineTo(d.x,d.y)}ctx.stroke()}
+}
+function drawDots(){
+  dots.forEach(d=>{
+    const dx=d.x-mouse.x,dy=d.y-mouse.y,dist=Math.sqrt(dx*dx+dy*dy),glow=Math.max(0,1-dist/160);
+    ctx.beginPath();ctx.arc(d.x,d.y,d.size+glow*2.5,0,Math.PI*2);
+    ctx.fillStyle=`rgba(0,229,255,${0.25+glow*0.75})`;
+    ctx.shadowBlur=glow>0.1?8*glow:0;ctx.shadowColor='rgba(0,229,255,0.8)';
+    ctx.fill();ctx.shadowBlur=0;
+  });
+}
+function updateDots(){
+  dots.forEach(d=>{
+    const dx=mouse.x-d.x,dy=mouse.y-d.y,dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<120){const f=(120-dist)/120;d.vx-=(dx/dist)*f*1.2;d.vy-=(dy/dist)*f*1.2}
+    d.vx+=(d.ox-d.x)*0.06;d.vy+=(d.oy-d.y)*0.06;d.vx*=0.82;d.vy*=0.82;d.x+=d.vx;d.y+=d.vy;
+  });
+}
+const particles=[];
+for(let i=0;i<55;i++) particles.push({x:Math.random()*1920,y:Math.random()*1080,vx:(Math.random()-0.5)*0.4,vy:-(Math.random()*0.6+0.1),alpha:Math.random()*0.5+0.1,size:Math.random()*1.5+0.3,life:Math.random()});
+function updateParticles(){
+  particles.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.life+=0.003;
+    if(p.y<-10||p.life>1){p.y=H+10;p.x=Math.random()*W;p.life=0}
+    const a=Math.sin(p.life*Math.PI)*p.alpha;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=`rgba(0,180,216,${a})`;ctx.fill();
+  });
+}
+function animate(){ctx.clearRect(0,0,W,H);updateDots();drawGrid();drawDots();updateParticles();requestAnimationFrame(animate)}
+window.addEventListener('resize',resize);
+window.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY});
+window.addEventListener('touchmove',e=>{mouse.x=e.touches[0].clientX;mouse.y=e.touches[0].clientY},{passive:true});
+resize();animate();
+
+const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
